@@ -1,68 +1,59 @@
 <template>
-  <div class="encheres-app">
-    <h1>Tableau des Enchères</h1>
+  <div class="produits-app"> 
+    <h1>Tableau des Produits</h1>
     <div class="table-container">
       <div class="table-header">
         <div>ID</div>
-        <div>Titre</div>
+        <div>Libellé</div>
         <div>Description</div>
-        <div>Date Heure Début</div>
-        <div>Date Heure Fin</div>
-        <div>Statut</div>
-        <div>Prix Début</div>  
-        <div>Option</div>  
+        <div>Prix Plancher</div>
       </div>
       <div 
         class="table-row" 
-        v-for="enchere in encheres" 
-        :key="enchere.id"
+        v-for="produit in produits" 
+        :key="produit.id"
       >
-        <div>{{ enchere.id }}</div>
-        <div>{{ enchere.titre }}</div>
-        <div>{{ enchere.description }}</div>
-        <div>{{ enchere.dateHeureDebut }}</div>
-        <div>{{ enchere.dateHeureFin }}</div>
-        <div>{{ enchere.statut }}</div>
-        <div>{{ enchere.prixDebut }}</div>
-        <button @click="editEncherir(enchere)">Enchérir</button>
+        <div>{{ produit.id }}</div>
+        <div>{{ produit.libelle }}</div>
+        <div>{{ produit.description }}</div>
+        <div>{{ produit.prixPlancher }}</div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 import { ref, onMounted } from 'vue';
 
 export default {
-  name: 'EnchereApp',
+  name: 'ProduitApp',
   setup() {
-    const encheres = ref([]);
+    const produits = ref([]);
+    const newProduit = ref({
+      libelle: '',
+      description: '',
+      prixPlancher: 0,
+    });
+    const isEditing = ref(false);
+    const editingProduitId = ref(null);
 
-    // Fonction pour récupérer les enchères
-    const fetchEncheres = async () => {
+    const fetchProduits = async () => {
       try {
-        const response = await fetch('/api/encheres');
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement des enchères');
-        }
-        encheres.value = await response.json();
+        const response = await fetch('/api/produits');
+        if (!response.ok) throw new Error('Erreur lors du chargement des produits');
+        produits.value = await response.json();
       } catch (error) {
-        console.error('Erreur :', error.message);
+        console.error(error.message);
       }
     };
 
-    // Charger les enchères au montage du composant
-    onMounted(() => {
-      fetchEncheres();
-    });
+    onMounted(fetchProduits);
 
     return {
-      encheres,
+      produits,
     };
   },
 };
 </script>
-
 <style scoped>
 .encheres-app {
   max-width: 800px;
