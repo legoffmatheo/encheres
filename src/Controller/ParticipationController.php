@@ -6,15 +6,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class VueController extends AbstractController
+class ParticipationController extends AbstractController
 {
-    #[Route('/test', name: 'app_vue')]
+    #[Route('/participation', name: 'app_participation')]
     public function index(): Response
     {
-        return $this->render('base.html.twig', [
-            'controller_name' => 'VueController',
+        return $this->render('participation/index.html.twig', [
+            'controller_name' => 'ParticipationController',
         ]);
     }
-
-    
 }

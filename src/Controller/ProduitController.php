@@ -6,15 +6,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class VueController extends AbstractController
+class ProduitController extends AbstractController
 {
-    #[Route('/test', name: 'app_vue')]
+    #[Route('/produit', name: 'app_produit')]
     public function index(): Response
     {
-        return $this->render('base.html.twig', [
-            'controller_name' => 'VueController',
+        return $this->render('produit/index.html.twig', [
+            'controller_name' => 'ProduitController',
         ]);
     }
-
-    
 }
