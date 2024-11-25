@@ -32,6 +32,14 @@ class Enchere
     #[ORM\Column]
     private ?float $prixDebut = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Participation $lesParticipations = null;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Produit $leProduit = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +113,30 @@ class Enchere
     public function setPrixDebut(float $prixDebut): static
     {
         $this->prixDebut = $prixDebut;
+
+        return $this;
+    }
+
+    public function getLesParticipations(): ?Participation
+    {
+        return $this->lesParticipations;
+    }
+
+    public function setLesParticipations(?Participation $lesParticipations): static
+    {
+        $this->lesParticipations = $lesParticipations;
+
+        return $this;
+    }
+
+    public function getLeProduit(): ?Produit
+    {
+        return $this->leProduit;
+    }
+
+    public function setLeProduit(Produit $leProduit): static
+    {
+        $this->leProduit = $leProduit;
 
         return $this;
     }

@@ -37,6 +37,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    #[ORM\ManyToOne]
+    private ?Participation $lesParticipations = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,6 +135,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getLesParticipations(): ?Participation
+    {
+        return $this->lesParticipations;
+    }
+
+    public function setLesParticipations(?Participation $lesParticipations): static
+    {
+        $this->lesParticipations = $lesParticipations;
 
         return $this;
     }
