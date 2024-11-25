@@ -15,4 +15,6 @@ class ProduitController extends AbstractController
             'controller_name' => 'ProduitController',
         ]);
     }
+
+    
 }
