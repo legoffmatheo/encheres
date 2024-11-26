@@ -55,7 +55,7 @@ export default {
     // Fetch all encheres
     const fetchEncheres = async () => {
       try {
-        const response = await fetch('/api/encheres');
+        const response = await fetch('/api/encheresc');
         if (!response.ok) throw new Error('Erreur lors du chargement des enchères');
         encheres.value = await response.json();
       } catch (error) {
