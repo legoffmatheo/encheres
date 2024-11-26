@@ -26,33 +26,87 @@
         <div>{{ enchere.statut }}</div>
         <div>{{ enchere.prixDebut }}</div>
         <div>{{ enchere.produit }}</div>
-        <button @click="editEncherir(enchere)">Enchérir</button>
+        <button @click="showParticipationForm(enchere)">Enchérir</button>
       </div>
+    </div>
+
+    <!-- Formulaire de participation -->
+    <div v-if="selectedEnchere" class="participation-form">
+      <h2>Ajouter une Participation à l'Enchère "{{ selectedEnchere.titre }}"</h2>
+      <form @submit.prevent="submitParticipation">
+        <div>
+          <label for="prixEncheri">Prix Enchéri :</label>
+          <input
+            type="number"
+            id="prixEncheri"
+            v-model="participation.prixEncheri"
+            required
+            min="0"
+          />
+        </div>
+        <div>
+          <label for="budgetMaximum">Budget Maximum :</label>
+          <input
+            type="number"
+            id="budgetMaximum"
+            v-model="participation.budgetMaximum"
+            required
+            min="0"
+          />
+        </div>
+        <button type="submit">Soumettre</button>
+        <button type="button" @click="cancelParticipation">Annuler</button>
+      </form>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 export default {
   name: 'EnchereApp',
   setup() {
     const encheres = ref([]);
-    const produits = ref([]);
-
-    const newEnchere = ref({
-      titre: '',
-      description: '',
-      dateHeureDebut: '',
-      dateHeureFin: '',
-      statut: '',
-      prixDebut: 0,
+    const selectedEnchere = ref(null); // Enchère actuellement sélectionnée pour enchérir
+    const participation = ref({
+      prixEncheri: '',
+      budgetMaximum: '',
     });
-    const isEditing = ref(false);
-    const editingEnchereId = ref(null);
 
-    // Fetch all encheres
+    // Fonction pour afficher le formulaire d'enchère
+    const showParticipationForm = (enchere) => {
+      selectedEnchere.value = enchere;
+    };
+
+    // Fonction pour soumettre la participation
+    const submitParticipation = async () => {
+      try {
+        const response = await fetch('/api/participation/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prixEncheri: participation.value.prixEncheri,
+            budgetMaximum: participation.value.budgetMaximum,
+            enchereId: selectedEnchere.value.id,
+          }),
+        });
+
+        if (!response.ok) throw new Error("Erreur lors de l'ajout de la participation");
+        alert('Participation ajoutée avec succès');
+        cancelParticipation();
+      } catch (error) {
+        console.error(error.message);
+        alert('Erreur lors de l’ajout de la participation');
+      }
+    };
+
+    // Fonction pour annuler la participation
+    const cancelParticipation = () => {
+      selectedEnchere.value = null;
+      participation.value = { prixEncheri: '', budgetMaximum: '' };
+    };
+
     const fetchEncheres = async () => {
       try {
         const response = await fetch('/api/encheresc');
@@ -63,111 +117,15 @@ export default {
       }
     };
 
-
-// Charger les produits disponibles
-const fetchProduits = async () => {
-  try {
-    const response = await fetch('/api/produits');
-    if (!response.ok) throw new Error('Erreur lors du chargement des produits');
-    produits.value = await response.json();
-  } catch (error) {
-    console.error(error.message);
-  }
-};
-
-    // Add a new enchere
-    const addEnchere = async () => {
-      try {
-        const response = await fetch('/api/enchere/add', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newEnchere.value),
-        });
-        if (!response.ok) throw new Error("Erreur lors de l'ajout de l'enchère");
-        await fetchEncheres();
-        resetForm();
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-    // Update an existing enchere
-    const updateEnchere = async () => {
-      try {
-        const response = await fetch(`/api/enchere/update/${editingEnchereId.value}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newEnchere.value),
-        });
-        if (!response.ok) throw new Error("Erreur lors de la mise à jour de l'enchère");
-        await fetchEncheres();
-        resetForm();
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-    const deleteEnchere = async (id) => {
-      try {
-        const response = await fetch(`/api/enchere/delete/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error("Erreur lors de la suppression de l'enchère");
-        await fetchEncheres();
-      } catch (error) {
-        console.error(error.message);
-      }
-    };
-
-
-
-    const editEnchere = (enchere) => {
-  // Remplir le formulaire avec les données existantes
-  newEnchere.value = { 
-    titre: enchere.titre,
-    description: enchere.description,
-    dateHeureDebut: enchere.dateHeureDebut,
-    dateHeureFin: enchere.dateHeureFin,
-    statut: enchere.statut,
-    prixDebut: enchere.prixDebut,
-    produitId: enchere.produitId // Ici, on prend l'ID du produit et non pas le produit lui-même
-  };
-  isEditing.value = true;
-  editingEnchereId.value = enchere.id;
-};
-
-
-
-
-    const resetForm = () => {
-      isEditing.value = false;
-      editingEnchereId.value = null;
-      newEnchere.value = {
-        titre: '',
-        description: '',
-        dateHeureDebut: '',
-        dateHeureFin: '',
-        statut: '',
-        prixDebut: 0,
-      };
-    };
-
-    const submitForm = async () => {
-      if (isEditing.value) await updateEnchere();
-      else await addEnchere();
-    };
-    onMounted(() => {
-  fetchProduits();
-  fetchEncheres();
-});
+    fetchEncheres();
 
     return {
       encheres,
-      produits,
-      newEnchere,
-      isEditing,
-      submitForm,
-      deleteEnchere,
-      editEnchere,
-      resetForm,
+      selectedEnchere,
+      participation,
+      showParticipationForm,
+      submitParticipation,
+      cancelParticipation,
     };
   },
 };
@@ -208,5 +166,19 @@ h1 {
 .table-row:nth-child(even) {
   background-color: #f4f4f4;
 }
-</style>
 
+.participation-form {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  background-color: #fdfdfd;
+}
+
+.participation-form form div {
+  margin-bottom: 10px;
+}
+
+.participation-form form button {
+  margin-right: 10px;
+}
+</style>

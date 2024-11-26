@@ -84,12 +84,13 @@ class VueController extends AbstractController
         }
     
         try {
-            // Recherche du produit associé
+            
+            
             $produit = $this->entityManager->getRepository(Produit::class)->find($data['produitId']);
-    
-            if (!$produit) {
-                return new JsonResponse(['error' => 'Produit introuvable'], Response::HTTP_BAD_REQUEST);
-            }
+    if (!$produit) {
+    return new JsonResponse(['error' => 'Produit introuvable'], Response::HTTP_BAD_REQUEST);
+    }
+
     
             $enchere = new Enchere();
             $enchere->setTitre($data['titre']);
