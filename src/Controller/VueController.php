@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Enchere;
 use App\Entity\Produit;  
+use App\Entity\Participation;  
+use App\Entity\User;  
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -250,4 +252,70 @@ class VueController extends AbstractController
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    #[Route('/api/participation/add', name: 'api_participation_add', methods: ['POST'])]
+    public function addParticipation(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+    
+        if (!isset($data['prixEncheri']) || !isset($data['budgetMaximum']) || !isset($data['enchereId'])) {
+            return new JsonResponse(['error' => 'Données manquantes'], Response::HTTP_BAD_REQUEST);
+        }
+    
+        $enchere = $this->entityManager->getRepository(Enchere::class)->find($data['enchereId']);
+        if (!$enchere) {
+            return new JsonResponse(['error' => 'Enchère non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+        if ($enchere->getStatut() !== 'en cours') {
+            return new JsonResponse(['error' => 'Cette enchère n\'est pas active'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $participation = $this->entityManager->getRepository(Participation::class)->findOneBy([
+            'laEnchere' => $enchere
+        ]);
+
+        if ($participation) {
+            $participation->setPrixEncheri($data['prixEncheri']);
+            $participation->setBudgetMaximum($data['budgetMaximum']);
+            $message = 'Participation mise à jour avec succès';
+        } else {
+            // Sinon, on crée une nouvelle participation
+            $participation = new Participation();
+            $participation->setPrixEncheri($data['prixEncheri']);
+            $participation->setBudgetMaximum($data['budgetMaximum']);
+            $participation->setLaEnchere($enchere);
+            $message = 'Participation ajoutée avec succès';
+        }
+    
+        try {
+            $this->entityManager->persist($participation);
+            $this->entityManager->flush();
+            return new JsonResponse(['message' => 'Participation ajoutée avec succès'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            // Si une exception se produit (par exemple un problème de base de données)
+            return new JsonResponse(['error' => 'Erreur interne du serveur'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    #[Route('/api/encheresa/{id}', name: 'api_encheresa_get_by_id', methods: ['GET'])]
+public function getEnchereById(int $id): JsonResponse
+{
+    
+    $enchere = $this->entityManager->getRepository(Enchere::class)->find($id);
+    if (!$enchere) {
+        return new JsonResponse(['error' => 'Enchère introuvable'], Response::HTTP_NOT_FOUND);
+    }
+
+
+    $prixMax = $this->entityManager->getRepository(Participation::class)
+        ->createQueryBuilder('p')
+        ->select('MAX(p.prixEncheri)')
+        ->where('p.enchere = :enchere')
+        ->setParameter('enchere', $enchere)
+        ->getQuery()
+        ->getSingleScalarResult();
+
+    return new JsonResponse(['prixMax' => $prixMax ?? $enchere->getPrixDebut()]);
+}
+
+
 }
