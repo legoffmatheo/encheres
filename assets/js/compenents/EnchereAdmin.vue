@@ -6,14 +6,20 @@
   <input v-model="newEnchere.description" placeholder="Description" required />
   <input v-model="newEnchere.dateHeureDebut" type="datetime-local" placeholder="Date Heure Début" required />
   <input v-model="newEnchere.dateHeureFin" type="datetime-local" placeholder="Date Heure Fin" required />
-  <input v-model="newEnchere.statut" placeholder="Statut" required />
+  <select v-model="newEnchere.statut" required>
+  <option disabled value="">Sélectionnez un statut</option>
+  <option value="à venir">à venir</option>
+  <option value="en cours">en cours</option>
+  <option value="terminé">terminé</option>
+</select>
+
   <input v-model.number="newEnchere.prixDebut" type="number" placeholder="Prix Début" required />
-  <!-- Champ pour sélectionner un produit -->
   <select v-model="newEnchere.produitId" required>
-    <option v-for="produit in produits" :value="produit.id" :key="produit.id">
-      {{ produit.libelle }}
-    </option>
-  </select>
+  <option v-for="produit in produits" :value="produit.id" :key="produit.id">
+    {{ produit.libelle }}
+  </option>
+</select>
+
   <button type="submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
   <button type="button" v-if="isEditing" @click="cancelEdit">Annuler</button>
 </form>
@@ -74,7 +80,7 @@ export default {
     // Fetch all encheres
     const fetchEncheres = async () => {
       try {
-        const response = await fetch('/api/encheres');
+        const response = await fetch('/api/encheresa');
         if (!response.ok) throw new Error('Erreur lors du chargement des enchères');
         encheres.value = await response.json();
       } catch (error) {
