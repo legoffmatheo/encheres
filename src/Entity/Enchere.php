@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EnchereRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,31 +16,37 @@ class Enchere
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $titre = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateHeureDebut = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateHeureFin = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $statut = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $prixDebut = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Participation $lesParticipations = null;
-
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
     private ?Produit $leProduit = null;
+
+    /**
+     * @var Collection<int, Participation>
+     */
+    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'enchere')]
+    private Collection $lesParticipations;
+
+    public function __construct()
+    {
+        $this->lesParticipations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -50,7 +58,7 @@ class Enchere
         return $this->titre;
     }
 
-    public function setTitre(string $titre): static
+    public function setTitre(?string $titre): static
     {
         $this->titre = $titre;
 
@@ -62,7 +70,7 @@ class Enchere
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -74,7 +82,7 @@ class Enchere
         return $this->dateHeureDebut;
     }
 
-    public function setDateHeureDebut(\DateTimeInterface $dateHeureDebut): static
+    public function setDateHeureDebut(?\DateTimeInterface $dateHeureDebut): static
     {
         $this->dateHeureDebut = $dateHeureDebut;
 
@@ -86,7 +94,7 @@ class Enchere
         return $this->dateHeureFin;
     }
 
-    public function setDateHeureFin(\DateTimeInterface $dateHeureFin): static
+    public function setDateHeureFin(?\DateTimeInterface $dateHeureFin): static
     {
         $this->dateHeureFin = $dateHeureFin;
 
@@ -98,7 +106,7 @@ class Enchere
         return $this->statut;
     }
 
-    public function setStatut(string $statut): static
+    public function setStatut(?string $statut): static
     {
         $this->statut = $statut;
 
@@ -110,21 +118,9 @@ class Enchere
         return $this->prixDebut;
     }
 
-    public function setPrixDebut(float $prixDebut): static
+    public function setPrixDebut(?float $prixDebut): static
     {
         $this->prixDebut = $prixDebut;
-
-        return $this;
-    }
-
-    public function getLesParticipations(): ?Participation
-    {
-        return $this->lesParticipations;
-    }
-
-    public function setLesParticipations(?Participation $lesParticipations): static
-    {
-        $this->lesParticipations = $lesParticipations;
 
         return $this;
     }
@@ -134,10 +130,41 @@ class Enchere
         return $this->leProduit;
     }
 
-    public function setLeProduit(Produit $leProduit): static
+    public function setLeProduit(?Produit $leProduit): static
     {
         $this->leProduit = $leProduit;
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, Participation>
+     */
+    public function getLesParticipations(): Collection
+    {
+        return $this->lesParticipations;
+    }
+
+    public function addLesParticipation(Participation $lesParticipation): static
+    {
+        if (!$this->lesParticipations->contains($lesParticipation)) {
+            $this->lesParticipations->add($lesParticipation);
+            $lesParticipation->setlaEnchere($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLesParticipation(Participation $lesParticipation): static
+    {
+        if ($this->lesParticipations->removeElement($lesParticipation)) {
+            // set the owning side to null (unless already changed)
+            if ($lesParticipation->getlaEnchere() === $this) {
+                $lesParticipation->setlaEnchere(null);
+            }
+        }
+
+        return $this;
+    }
 }
+

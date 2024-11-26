@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -39,8 +41,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\ManyToOne]
-    private ?Participation $lesParticipations = null;
+    /**
+     * @var Collection<int, Participation>
+     */
+    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'leUser')]
+    private Collection $lesParticipations;
+
+    public function __construct()
+    {
+        $this->lesParticipations = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -141,15 +152,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLesParticipations(): ?Participation
+    /**
+     * @return Collection<int, Participation>
+     */
+    public function getLesParticipations(): Collection
     {
         return $this->lesParticipations;
     }
 
-    public function setLesParticipations(?Participation $lesParticipations): static
+    public function addLesParticipation(Participation $lesParticipation): static
     {
-        $this->lesParticipations = $lesParticipations;
+        if (!$this->lesParticipations->contains($lesParticipation)) {
+            $this->lesParticipations->add($lesParticipation);
+            $lesParticipation->setLeUser($this);
+        }
 
         return $this;
     }
+
+    public function removeLesParticipation(Participation $lesParticipation): static
+    {
+        if ($this->lesParticipations->removeElement($lesParticipation)) {
+            // set the owning side to null (unless already changed)
+            if ($lesParticipation->getLeUser() === $this) {
+                $lesParticipation->setLeUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

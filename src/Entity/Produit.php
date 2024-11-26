@@ -13,13 +13,13 @@ class Produit
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $libelle = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $prixPlancher = null;
 
     public function getId(): ?int
@@ -32,7 +32,7 @@ class Produit
         return $this->libelle;
     }
 
-    public function setLibelle(string $libelle): static
+    public function setLibelle(?string $libelle): static
     {
         $this->libelle = $libelle;
 
@@ -44,7 +44,7 @@ class Produit
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -56,7 +56,7 @@ class Produit
         return $this->prixPlancher;
     }
 
-    public function setPrixPlancher(float $prixPlancher): static
+    public function setPrixPlancher(?float $prixPlancher): static
     {
         $this->prixPlancher = $prixPlancher;
 
