@@ -7,11 +7,14 @@ use App\Entity\Produit;
 use App\Entity\Participation;  
 use App\Entity\User;  
 use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\Utils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\SecurityBundle\Security;
+
 
 class VueController extends AbstractController
 {
@@ -252,8 +255,9 @@ class VueController extends AbstractController
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
     #[Route('/api/participation/add', name: 'api_participation_add', methods: ['POST'])]
-    public function addParticipation(Request $request): JsonResponse
+    public function addParticipation(Request $request, Security $security): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
     
@@ -269,13 +273,20 @@ class VueController extends AbstractController
             return new JsonResponse(['error' => 'Cette enchère n\'est pas active'], Response::HTTP_BAD_REQUEST);
         }
 
+        $user = $security->getLeUser();
+        if (!$user) {
+        return new JsonResponse(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
         $participation = $this->entityManager->getRepository(Participation::class)->findOneBy([
-            'laEnchere' => $enchere
+            'laEnchere' => $enchere,
+            'leUser' => $user
         ]);
 
         if ($participation) {
             $participation->setPrixEncheri($data['prixEncheri']);
             $participation->setBudgetMaximum($data['budgetMaximum']);
+            $participation->setLeUser($user);
             $message = 'Participation mise à jour avec succès';
         } else {
             // Sinon, on crée une nouvelle participation
@@ -283,6 +294,7 @@ class VueController extends AbstractController
             $participation->setPrixEncheri($data['prixEncheri']);
             $participation->setBudgetMaximum($data['budgetMaximum']);
             $participation->setLaEnchere($enchere);
+            $participation->setLeUser($user);
             $message = 'Participation ajoutée avec succès';
         }
     
@@ -295,6 +307,8 @@ class VueController extends AbstractController
             return new JsonResponse(['error' => 'Erreur interne du serveur'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    
     
     #[Route('/api/encheresa/{id}', name: 'api_encheresa_get_by_id', methods: ['GET'])]
 public function getEnchereById(int $id): JsonResponse
