@@ -273,15 +273,18 @@ class VueController extends AbstractController
             return new JsonResponse(['error' => 'Cette enchère n\'est pas active'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user = $security->getLeUser();
+        $user = $this->getUser();
+
         if (!$user) {
         return new JsonResponse(['error' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
         }
 
+
         $participation = $this->entityManager->getRepository(Participation::class)->findOneBy([
             'laEnchere' => $enchere,
             'leUser' => $user
-        ]);
+
+        ]);      
 
         if ($participation) {
             $participation->setPrixEncheri($data['prixEncheri']);
@@ -289,7 +292,6 @@ class VueController extends AbstractController
             $participation->setLeUser($user);
             $message = 'Participation mise à jour avec succès';
         } else {
-            // Sinon, on crée une nouvelle participation
             $participation = new Participation();
             $participation->setPrixEncheri($data['prixEncheri']);
             $participation->setBudgetMaximum($data['budgetMaximum']);
@@ -330,6 +332,7 @@ public function getEnchereById(int $id): JsonResponse
 
     return new JsonResponse(['prixMax' => $prixMax ?? $enchere->getPrixDebut()]);
 }
+
 
 
 }
