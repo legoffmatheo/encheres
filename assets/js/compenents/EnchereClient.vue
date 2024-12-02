@@ -1,4 +1,5 @@
 <template>
+  
   <div class="encheres-app">
     <h1>Tableau des Enchères</h1>
     <div class="table-container">
@@ -29,35 +30,34 @@
         <button @click="showParticipationForm(enchere)">Enchérir</button>
       </div>
     </div>
-
-    <!-- Formulaire de participation -->
     <div v-if="selectedEnchere" class="participation-form">
-      <h2>Ajouter une Participation à l'Enchère "{{ selectedEnchere.titre }}"</h2>
-      <form @submit.prevent="submitParticipation">
-        <div>
-          <label for="prixEncheri">Prix Enchéri :</label>
-          <input
-            type="number"
-            id="prixEncheri"
-            v-model="participation.prixEncheri"
-            required
-            :min="selectedEnchere.prixMax || selectedEnchere.prixDebut"
-          />
-        </div>
-        <div>
-          <label for="budgetMaximum">Budget Maximum :</label>
-          <input
-            type="number"
-            id="budgetMaximum"
-            v-model="participation.budgetMaximum"
-            required
-            min="0"
-          />
-        </div>
-        <button type="submit" :disabled="participation.prixEncheri > participation.budgetMaximum">Soumettre</button>
-        <button type="button" @click="cancelParticipation">Annuler</button>
-      </form>
+  <h2>Ajouter une Participation à l'Enchère "{{ selectedEnchere.titre }}"</h2>
+  <form @submit.prevent="submitParticipation">
+    <div>
+      <label for="prixEncheri">Prix Enchéri :</label>
+      <input
+        type="number"
+        id="prixEncheri"
+        v-model="participation.prixEncheri"
+        required
+        :min="selectedEnchere.prixMax || selectedEnchere.prixDebut"
+      />
     </div>
+    <div>
+      <label for="budgetMaximum">Budget Maximum :</label>
+      <input
+        type="number"
+        id="budgetMaximum"
+        v-model="participation.budgetMaximum"
+        required
+        min="0"
+      />
+    </div>
+    <button type="submit" :disabled="participation.prixEncheri > participation.budgetMaximum">Soumettre</button>
+    <button type="button" @click="cancelParticipation">Annuler</button>
+  </form>
+</div>
+
   </div>
 </template>
 
@@ -75,18 +75,26 @@ export default {
       budgetMaximum: '',
     });
 
-    // Fonction pour afficher le formulaire d'enchère
-    const showParticipationForm = (enchere) => {
-      selectedEnchere.value = enchere;
+    const showParticipationForm = async (enchere) => {
+  try {
+    selectedEnchere.value = enchere;
 
-      // Récupérer le prix max pour l'enchère sélectionnée
-      fetch(`/api/encheresa/${enchere.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          selectedEnchere.value.prixMax = data.prixMax || enchere.prixDebut;
-        })
-        .catch((err) => console.error('Erreur lors de la récupération du prix max:', err));
-    };
+    // Récupérer le prix max actuel pour l'enchère
+    const response = await fetch(`/api/encheresa/${enchere.id}`);
+    const data = await response.json();
+
+    // Si aucun prixMax, utiliser prixDebut
+    selectedEnchere.value.prixMax = data.prixMax || enchere.prixDebut;
+
+    // Initialiser le champ prixEncheri avec le prix minimal (prixMax ou prixDebut)
+    participation.value.prixEncheri = selectedEnchere.value.prixMax;
+
+  } catch (err) {
+    console.error('Erreur lors de la récupération du prix max:', err);
+  }
+};
+
+
 
     const submitParticipation = async () => {
   try {
