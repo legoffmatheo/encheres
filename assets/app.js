@@ -1,15 +1,18 @@
 import { createApp } from 'vue';
-import Bonjour from './js/compenents/Bonjour.vue';
-import EnchereC from './js/compenents/EnchereClient.vue';
-import EnchereA from './js/compenents/EnchereAdmin.vue';
-import ProduitC from './js/compenents/ProduitClient.vue';
-import ProduitA from './js/compenents/ProduitAdmin.vue';
+import Base from './js/compenents/Accueil.vue';
+import AVenir from './js/compenents/EncheresAVenir.vue';
+import EnCours from './js/compenents/EnchereEnCours.vue';
+import MesEnCours from './js/compenents/MesEncheresEnCours.vue';
+import Terminees from './js/compenents/EncherresTerminees.vue';
+import InscriptionEncherir from './js/compenents/InscriptionEncherir.vue';
+
+createApp(Base).mount('#app');
+createApp(AVenir).mount('#eav');
+createApp(EnCours).mount('#ec');
+createApp(MesEnCours).mount('#mec');
+createApp(Terminees).mount('#ter');
+createApp(InscriptionEncherir).mount('#ie');
 
 
-createApp(Bonjour).mount('#app');
-createApp(EnchereC).mount('#app01');
-createApp(EnchereA).mount('#app11');
-createApp(ProduitC).mount('#app02');
-createApp(ProduitA).mount('#app12');
 
 

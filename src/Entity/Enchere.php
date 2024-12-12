@@ -40,7 +40,7 @@ class Enchere
     /**
      * @var Collection<int, Participation>
      */
-    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'enchere')]
+    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'laEnchere')]
     private Collection $lesParticipations;
 
     public function __construct()
@@ -166,5 +166,18 @@ class Enchere
 
         return $this;
     }
+
+    public function getPrixPlusHaut(): ?float
+{
+    $prixMax = null;
+
+    foreach ($this->lesParticipations as $participation) {
+        if ($participation->getPrixEncheri() !== null) {
+            $prixMax = max($prixMax ?? 0, $participation->getPrixEncheri());
+        }
+    }
+
+    return $prixMax;
+}
 }
 
